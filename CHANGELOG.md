@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4
+
+Added
+- New 'Simple' and 'Map' custom trade types, much easier to use than the JSON ones
+- Simple JSON content validation for JSON custom trades
+
+Tweaked
+- Improved the launch script to try different Python commands before failing
+- Renamed the virtual environment folder from `.venv` to `.egovenv`
+- Slightly tweaked the project structure
+
+Fixed
+- Fixed the datapack's diaries path in the trades' help
+
+
 ## 1.3
 
 Added
