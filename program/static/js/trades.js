@@ -85,6 +85,7 @@ async function updateServer(card, action) {
         tradeData["content"] = JSON.stringify(makeCustomTradeData(card, { isMap: type === "tradeMap" }));
     } else {
         // Custom JSON trades (tradeJson type) don't need a customType field
+        validateJsonContent(card, content);
         tradeData["content"] = content;
     }
     tradeData = { [action]: [tradeData] };
@@ -197,6 +198,7 @@ function addTradeCard(isNew, item) {
                     tradeTypeSelect.value = "tradeJson";
                     jsonTradeContentDiv.hidden = false;
                     jsonTradeContent.value = item.content;
+                    validateJsonContent(thisCard, item.content);
                 }
                 break;
         }
@@ -253,4 +255,16 @@ function addTradeCard(isNew, item) {
 
     // Add card to top of container
     cardContainer.insertBefore(newCard, cardContainer.firstChild);
+}
+
+function validateJsonContent(card, content) {
+    // Validate JSON before sending; if invalid, show message in the card
+    const jsonDiv = card.querySelector("#json-trade-content");
+    const errorDiv = jsonDiv.querySelector('#json-error');
+    try {
+        JSON.parse(content);
+        errorDiv.hidden = true;
+    } catch (e) {
+        errorDiv.hidden = false;
+    }
 }

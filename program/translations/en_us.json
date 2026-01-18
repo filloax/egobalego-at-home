@@ -140,6 +140,7 @@
     "trade_map_structure_id_tag": "Structure ID / Tag",
     "trade_map_name": "Name",
     "trade_json_content": "Trade JSON",
+    "trade_json_error": "Warning: Invalid JSON",
 
     "no_websocket": "Connect the mod to the WebSocket to use this function",
     "mod_response_status": "Last response",
