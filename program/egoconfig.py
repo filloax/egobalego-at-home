@@ -20,7 +20,7 @@ class Consts:
     DEFAULT_LANG = "en_us"
     FOLDER_PROGRAM = os.path.dirname(__file__)
     FOLDER_TRANSLATIONS = os.path.join(FOLDER_PROGRAM, "translations")
-    FOLDER_DATA = os.path.join(FOLDER_PROGRAM, "..", "data")
+    FOLDER_DATA = os.path.abspath(os.path.join(FOLDER_PROGRAM, os.pardir, "data"))
     FILE_APP_VERSION = os.path.join(FOLDER_DATA, "app_version")
     FILE_SERVER_DATA = os.path.join(FOLDER_DATA, "server_data.json")
     FILE_LAST_ID = os.path.join(FOLDER_DATA, "last_id.txt")
