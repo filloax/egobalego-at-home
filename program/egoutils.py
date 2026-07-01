@@ -1,18 +1,29 @@
 """Various utility functions"""
 
 import os, json, requests
-from .egoconfig import AppData, Consts
+from .egoconfig import AppData, Consts, Mode
 from . import egovalidate as validate
+
+
+def _data_file():
+    """Returns the server data file path for the current mode"""
+    return Consts.FILE_SERVER_DATA if AppData.mode == Mode.LEGACY else Consts.FILE_SERVER_DATA_NEW
+
+
+def _last_id_file():
+    """Returns the last id file path for the current mode"""
+    return Consts.FILE_LAST_ID if AppData.mode == Mode.LEGACY else Consts.FILE_LAST_ID_NEW
 
 
 def load_server_data():
     """Loads the server data file in memory"""
+    data_file = _data_file()
     try:
-        with open(Consts.FILE_SERVER_DATA, 'r') as f:
+        with open(data_file, 'r') as f:
             data = f.read()
             AppData.server_data = json.loads(data)
     except FileNotFoundError:
-        print_warning(f"Could not find the file '{Consts.FILE_SERVER_DATA}', it will be created the first time you add something.")
+        print_warning(f"Could not find the file '{data_file}', it will be created the first time you add something.")
     except Exception as e:
         print_error(f"Server data could not be loaded and was reset (your changes will apply on the next edit). Exception:\n{e}")
 
@@ -59,9 +70,9 @@ def remove_server_data(items_to_remove):
 
 def update_database():
     """Overwrites the server data and last id files with the values in memory"""
-    with open(Consts.FILE_LAST_ID, 'w') as f:
+    with open(_last_id_file(), 'w') as f:
         f.write(str(AppData.last_id))
-    with open(Consts.FILE_SERVER_DATA, 'w') as f:
+    with open(_data_file(), 'w') as f:
         json.dump(AppData.server_data, f, indent=4)
 
 
@@ -89,11 +100,12 @@ def load_translations():
 def load_last_id():
     """Loads the last id file in memory"""
     # Essential function, must crash the program there the file is formatted incorrectly
+    last_id_file = _last_id_file()
     try:
-        with open(Consts.FILE_LAST_ID, 'r') as f:
+        with open(last_id_file, 'r') as f:
             AppData.last_id = int(f.read().strip())
     except FileNotFoundError:
-        print_warning(f"Could not find the file '{Consts.FILE_LAST_ID}', it will be created the first time you add something.")
+        print_warning(f"Could not find the file '{last_id_file}', it will be created the first time you add something.")
 
 
 def load_color_theme():
@@ -146,5 +158,8 @@ def print_error(message):
 
 def get_validated_server_data_for_mod() -> list:
     """Used to validate and map custom and map trades before sending them to the mod"""
+    if AppData.mode != Mode.LEGACY:
+        # New-mode items are already stored in their final wire shape, no validation/mapping needed
+        return AppData.server_data
     validated_server_data = list(filter(lambda x: validate.validate_server_item(x), AppData.server_data))
     return validated_server_data

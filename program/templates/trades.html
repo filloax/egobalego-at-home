@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html data-bs-theme="{{theme}}">
+<html data-bs-theme="{{theme}}" data-mode="{{mode}}">
     {% include 'shared/head.html' %}
     <body>
         {% include 'shared/header.html' %}
         <main class="container my-3">
+            {% if mode != 'legacy' %}
+                <div class="row justify-content-center text-danger text-center mb-3">
+                    {{ translations.growsseth_only_warning }}
+                </div>
+            {% endif %}
             <div class="row justify-content-center">
                 <button id="add-card-button" type="button" class="col-auto btn btn-primary">
                     {% include 'icons/plus-circle.html' %} {{ translations.add_trade }}

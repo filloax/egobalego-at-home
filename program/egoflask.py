@@ -4,7 +4,7 @@ import os
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 from mistune import create_markdown
-from .egoconfig import AppData, Consts, Routes, Templates, SocketEvents
+from .egoconfig import AppData, Consts, Routes, Templates, SocketEvents, Mode
 from . import egoutils as utils
 
 def get_flask(app_name):
@@ -94,10 +94,11 @@ def get_socketio():
         utils.print_info("Sending reload event...")
         emit(SocketEvents.RELOAD, broadcast=True)
 
-    @socketio.on(SocketEvents.RESEARCHER_DIALOGUE)
-    def send_researcher_dialogue(data):
-        utils.print_info(f"Sending rdialogue event: {data}")
-        emit(SocketEvents.RESEARCHER_DIALOGUE, data, broadcast=True)
+    if AppData.mode == Mode.LEGACY:
+        @socketio.on(SocketEvents.RESEARCHER_DIALOGUE)
+        def send_researcher_dialogue(data):
+            utils.print_info(f"Sending rdialogue event: {data}")
+            emit(SocketEvents.RESEARCHER_DIALOGUE, data, broadcast=True)
 
     @socketio.on(SocketEvents.TOAST)
     def send_toast(data):
@@ -130,6 +131,7 @@ def _render_custom_template(page_name, help_key=None):
     params = {
         'name': page_name,
         'theme': AppData.color_theme,
+        'mode': AppData.mode,
         'help_title': AppData.translations[help_key],
         'help_content': _get_md_content(AppData.lang + f"/{help_key}"),
         'translations': AppData.translations

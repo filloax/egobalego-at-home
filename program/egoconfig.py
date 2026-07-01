@@ -2,10 +2,22 @@
 
 import os
 
+class Mode:
+    """Protocol the server speaks to the mod"""
+    NEW = "new"
+    LEGACY = "legacy"
+
+class ApiType:
+    """Item type identifiers used in the new Apibalego API"""
+    TOAST = "apibalego:toast"
+    COMMAND = "apibalego:command"
+    STRUCTURE = "apibalego:structure"
+
 class AppData:
     """Application data storage"""
     translations = {}
     lang = "unset"
+    mode = Mode.NEW
     server_data = []
     last_id = 0
     color_theme = "unset"
@@ -24,6 +36,8 @@ class Consts:
     FILE_APP_VERSION = os.path.join(FOLDER_DATA, "app_version")
     FILE_SERVER_DATA = os.path.join(FOLDER_DATA, "server_data.json")
     FILE_LAST_ID = os.path.join(FOLDER_DATA, "last_id.txt")
+    FILE_SERVER_DATA_NEW = os.path.join(FOLDER_DATA, "server_data_new.json")
+    FILE_LAST_ID_NEW = os.path.join(FOLDER_DATA, "last_id_new.txt")
     FILE_COLOR_THEME = os.path.join(FOLDER_DATA, "color_theme")
     UPDATE_CHECK_URL = "https://raw.githubusercontent.com/costantin0/egobalego-at-home/refs/heads/main/data/app_version"
     THEME_LIGHT = "light"

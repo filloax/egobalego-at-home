@@ -1,7 +1,7 @@
 """Main entrypoint of the app"""
 
 import os, argparse, webbrowser
-from .egoconfig import AppData, Consts
+from .egoconfig import AppData, Consts, Mode
 from . import egoflask
 from . import egoutils as utils
 
@@ -15,14 +15,17 @@ def main():
     parser.add_argument("-P", "--port", type=int, default=Consts.DEFAULT_PORT, help="Server port")
     parser.add_argument("--debug", action=argparse.BooleanOptionalAction, default=True, help="Flask debug mode")
     parser.add_argument("--lang", default=Consts.DEFAULT_LANG, help='Website language')
+    parser.add_argument("--legacy", action='store_true', help="Speak the legacy Growsseth API instead of the new Apibalego API")
 
     args = parser.parse_args()
     args_open: bool = args.open
     args_port: int = args.port
     args_debug: bool = args.debug
     args_lang: str = args.lang
+    args_legacy: bool = args.legacy
 
     AppData.lang = args_lang
+    AppData.mode = Mode.LEGACY if args_legacy else Mode.NEW
     utils.load_translations()
     utils.load_server_data()
     utils.load_last_id()

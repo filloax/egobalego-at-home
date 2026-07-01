@@ -1,65 +1,87 @@
 "use strict";
 
-import { api, state, addCardButton, CardUtils } from "./shared/utils.js";
+import { api, state, addCardButton, CardUtils, mode } from "./shared/utils.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
     addCardButton.initialize();
     state.loadLastId();
     let serverData = await state.loadServerData();
-    let communication_types = ["dialogue", "toast", "researcherDiary", "structureBook"]
-    serverData.forEach(item => {
-        if (communication_types.includes(item.type))
-            addCommCard(false, item);
-    });
+    if (mode === "legacy") {
+        let communication_types = ["dialogue", "toast", "researcherDiary", "structureBook"]
+        serverData.forEach(item => {
+            if (communication_types.includes(item.type))
+                addCommCard(false, item);
+        });
+    } else {
+        serverData.forEach(item => {
+            if (item.type === "apibalego:toast")
+                addCommCard(false, item);
+        });
+    }
     addCardButton.activate(() => addCommCard(true));
 });
 
 async function updateServer(card, action) {
     let id = card.querySelector("#card-id").value
     let typeSpecific = card.querySelector("#communication-type").value;
-    let diaryStructure = card.querySelector("#diary-structure").value;
-    let bookStructure = card.querySelector("#book-structure").value;
+    let diaryStructure = card.querySelector("#diary-structure")?.value;
+    let bookStructure = card.querySelector("#book-structure")?.value;
     let iconNamespace = card.querySelector("#namespace").value;
     let iconItemId = card.querySelector("#item-id").value;
-    let author = card.querySelector("#author-text").value;
+    let author = card.querySelector("#author-text")?.value;
     let title = card.querySelector("#title-text").value;
     let content = card.querySelector("#content-text").value;
     let active = card.querySelector("#card-enabler-switch").checked;
 
-    let commData = {
-        "id": id,
-        "type": "",
-        "content": content,
-        "active": active
-    };
-    switch (typeSpecific) {
-        case "dialogue":
-            commData["type"] = typeSpecific
-            break;
-        case "toast-simple":
-        case "toast-with-icon":
-            commData["type"] = "toast"
-            if (typeSpecific === "toast-with-icon")
-                commData["icon"] = iconNamespace + ":" + iconItemId
-            commData["title"] = title
-            break;
-        case "researcher-diary-new":
-        case "researcher-diary-replace":
-        case "researcher-diary-replace-goodbye":
-            commData["type"] = "researcherDiary"
-            if (typeSpecific === "researcher-diary-replace")
-                commData["structure"] = diaryStructure
-            commData["title"] = (typeSpecific === "researcher-diary-replace-goodbye") ? (title + "/endDiary") : title
-            break;
-        case "structure-book":
-            commData["type"] = "structureBook"
-            commData["structure"] = bookStructure
-            commData["content"] = JSON.stringify({
-                "author": author,
-                "name": title,
-                "pages": [content]
-            })
-            break;
+    let commData;
+    if (mode === "legacy") {
+        commData = {
+            "id": id,
+            "type": "",
+            "content": content,
+            "active": active
+        };
+        switch (typeSpecific) {
+            case "dialogue":
+                commData["type"] = typeSpecific
+                break;
+            case "toast-simple":
+            case "toast-with-icon":
+                commData["type"] = "toast"
+                if (typeSpecific === "toast-with-icon")
+                    commData["icon"] = iconNamespace + ":" + iconItemId
+                commData["title"] = title
+                break;
+            case "researcher-diary-new":
+            case "researcher-diary-replace":
+            case "researcher-diary-replace-goodbye":
+                commData["type"] = "researcherDiary"
+                if (typeSpecific === "researcher-diary-replace")
+                    commData["structure"] = diaryStructure
+                commData["title"] = (typeSpecific === "researcher-diary-replace-goodbye") ? (title + "/endDiary") : title
+                break;
+            case "structure-book":
+                commData["type"] = "structureBook"
+                commData["structure"] = bookStructure
+                commData["content"] = JSON.stringify({
+                    "author": author,
+                    "name": title,
+                    "pages": [content]
+                })
+                break;
+        }
+    } else {
+        let details = { "title": title };
+        if (typeSpecific === "toast-with-icon")
+            details["item"] = iconNamespace + ":" + iconItemId;
+        if (content !== "")
+            details["message"] = content;
+        commData = {
+            "id": id,
+            "type": "apibalego:toast",
+            "active": active,
+            "details": details
+        };
     }
     commData = { [action]: [commData] };
 
@@ -88,17 +110,17 @@ function addCommCard(isNew, item) {
     let commTypeSelect = thisCard.querySelector("#communication-type");
 
     let researcherStructDiv = thisCard.querySelector("#researcher-diary-struct");
-    let diaryStructure = researcherStructDiv.querySelector("#diary-structure");
+    let diaryStructure = researcherStructDiv?.querySelector("#diary-structure");
 
     let bookStructDiv = thisCard.querySelector("#structure-books");
-    let bookStructure = bookStructDiv.querySelector("#book-structure");
+    let bookStructure = bookStructDiv?.querySelector("#book-structure");
 
     let toastIconDiv = thisCard.querySelector("#toast-icon");
     let iconNamespace = toastIconDiv.querySelector("#namespace");
     let iconItemId = toastIconDiv.querySelector("#item-id");
 
     let bookAuthorDiv = thisCard.querySelector("#author");
-    let author = bookAuthorDiv.querySelector("#author-text");
+    let author = bookAuthorDiv?.querySelector("#author-text");
 
     let commTitleDiv = thisCard.querySelector("#title");
     let title = commTitleDiv.querySelector("#title-text");
@@ -112,38 +134,48 @@ function addCommCard(isNew, item) {
     }
     else {
         id.value = item.id;
-        content.value = item.content;
-        switch (item.type) {
-            case "dialogue":
-                commTypeSelect.value = item.type;
-                break;
-            case "toast":
-                commTypeSelect.value = item.icon ? "toast-with-icon" : "toast-simple"
-                if (item.icon) {
-                    iconNamespace.value = item.icon.split(":")[0]
-                    iconItemId.value = item.icon.split(":")[1]
-                }
-                title.value = item.title;
-                break;
-            case "researcherDiary":
-                if (item.title.endsWith("/endDiary")) {
-                    commTypeSelect.value = "researcher-diary-replace-goodbye"
-                    title.value = item.title.replace("/endDiary", "");
-                } else {
-                    commTypeSelect.value = item.structure ? "researcher-diary-replace" : "researcher-diary-new"
+        if (mode === "legacy") {
+            content.value = item.content;
+            switch (item.type) {
+                case "dialogue":
+                    commTypeSelect.value = item.type;
+                    break;
+                case "toast":
+                    commTypeSelect.value = item.icon ? "toast-with-icon" : "toast-simple"
+                    if (item.icon) {
+                        iconNamespace.value = item.icon.split(":")[0]
+                        iconItemId.value = item.icon.split(":")[1]
+                    }
                     title.value = item.title;
-                }
-                if (item.structure)
-                    diaryStructure.value = item.structure
-                break;
-            case "structureBook":
-                commTypeSelect.value = "structure-book"
-                bookStructure.value = item.structure
-                let bookContent = JSON.parse(item.content)
-                author.value = bookContent.author
-                title.value = bookContent.name
-                content.value = bookContent.pages
-                break;
+                    break;
+                case "researcherDiary":
+                    if (item.title.endsWith("/endDiary")) {
+                        commTypeSelect.value = "researcher-diary-replace-goodbye"
+                        title.value = item.title.replace("/endDiary", "");
+                    } else {
+                        commTypeSelect.value = item.structure ? "researcher-diary-replace" : "researcher-diary-new"
+                        title.value = item.title;
+                    }
+                    if (item.structure)
+                        diaryStructure.value = item.structure
+                    break;
+                case "structureBook":
+                    commTypeSelect.value = "structure-book"
+                    bookStructure.value = item.structure
+                    let bookContent = JSON.parse(item.content)
+                    author.value = bookContent.author
+                    title.value = bookContent.name
+                    content.value = bookContent.pages
+                    break;
+            }
+        } else {
+            commTypeSelect.value = item.details.item ? "toast-with-icon" : "toast-simple"
+            if (item.details.item) {
+                iconNamespace.value = item.details.item.split(":")[0]
+                iconItemId.value = item.details.item.split(":")[1]
+            }
+            title.value = item.details.title ?? "";
+            content.value = item.details.message ?? "";
         }
         cardEnablerSwitch.checked = item.active
         enableCard(commTypeSelect.value);

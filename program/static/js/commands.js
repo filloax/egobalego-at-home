@@ -1,16 +1,23 @@
 "use strict";
 
-import { api, state, addCardButton, CardUtils } from "./shared/utils.js";
+import { api, state, addCardButton, CardUtils, mode } from "./shared/utils.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
     addCardButton.initialize();
     state.loadLastId();
     let serverData = await state.loadServerData();
-    let command_types = ["command", "operation"]
-    serverData.forEach(item => {
-        if (command_types.includes(item.type))
-            addCommandCard(false, item);
-    });
+    if (mode === "legacy") {
+        let command_types = ["command", "operation"]
+        serverData.forEach(item => {
+            if (command_types.includes(item.type))
+                addCommandCard(false, item);
+        });
+    } else {
+        serverData.forEach(item => {
+            if (item.type === "apibalego:command")
+                addCommandCard(false, item);
+        });
+    }
     addCardButton.activate(() => addCommandCard(true));
 });
 
@@ -23,20 +30,35 @@ async function updateServer(card, action) {
     let z = card.querySelector("#z-coord").value;
     let active = card.querySelector("#card-enabler-switch").checked;
 
-    let commandData = {
-        "id": id,
-        "type": type === "manual" ? "command" : "operation",
-        "active": active
-    };
-    if (type === "manual")
-        commandData["content"] = content;
-    else {
-        commandData["name"] = type;
-        if (type !== "rmResearcher" && type !== "rmTentWithGift") {
-            commandData["x"] = parseInt(x) || 0;
-            commandData["y"] = parseInt(y) || 0;
-            commandData["z"] = parseInt(z) || 0;
+    let commandData;
+    if (mode === "legacy") {
+        commandData = {
+            "id": id,
+            "type": type === "manual" ? "command" : "operation",
+            "active": active
+        };
+        if (type === "manual")
+            commandData["content"] = content;
+        else {
+            commandData["name"] = type;
+            if (type !== "rmResearcher" && type !== "rmTentWithGift") {
+                commandData["x"] = parseInt(x) || 0;
+                commandData["y"] = parseInt(y) || 0;
+                commandData["z"] = parseInt(z) || 0;
+            }
         }
+    } else {
+        commandData = {
+            "id": id,
+            "type": "apibalego:command",
+            "active": active,
+            "details": {
+                "command": content,
+                "x": parseInt(x) || 0,
+                "y": parseInt(y) || 0,
+                "z": parseInt(z) || 0
+            }
+        };
     }
     commandData = { [action]: [commandData] };
 
@@ -77,21 +99,31 @@ function addCommandCard(isNew, item) {
     }
     else {
         id.value = item.id;
-        switch (item.type) {
-            case "command":
-                commandTypeSelect.value = "manual";
-                manualCommandDiv.hidden = false;
-                commandContent.value = item.content;
-                break;
-            case "operation":
-                commandTypeSelect.value = item.name;
-                if (item.name !== "rmResearcher" && item.name !== "rmTentWithGift") {
-                    coordinatesDiv.hidden = false;
-                    x.value = item.x;
-                    y.value = item.y;
-                    z.value = item.z;
-                }
-                break;
+        if (mode === "legacy") {
+            switch (item.type) {
+                case "command":
+                    commandTypeSelect.value = "manual";
+                    manualCommandDiv.hidden = false;
+                    commandContent.value = item.content;
+                    break;
+                case "operation":
+                    commandTypeSelect.value = item.name;
+                    if (item.name !== "rmResearcher" && item.name !== "rmTentWithGift") {
+                        coordinatesDiv.hidden = false;
+                        x.value = item.x;
+                        y.value = item.y;
+                        z.value = item.z;
+                    }
+                    break;
+            }
+        } else {
+            commandTypeSelect.value = "manual";
+            manualCommandDiv.hidden = false;
+            commandContent.value = item.details.command;
+            coordinatesDiv.hidden = false;
+            x.value = item.details.x ?? 0;
+            y.value = item.details.y ?? 0;
+            z.value = item.details.z ?? 0;
         }
         warningDiv.hidden = true;
         cardEnablerDiv.hidden = false;

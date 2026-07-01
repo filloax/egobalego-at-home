@@ -29,11 +29,13 @@
                     <select id="command-type" class="form-select">
                         <option value="none" selected></option>
                         <option value="manual">{{ translations.command_manual }}</option>
+                        {% if mode == 'legacy' %}
                         <option value="rmResearcher">{{ translations.command_rmResearcher }}</option>
                         <option value="tpResearcher">{{ translations.command_tpResearcher }}</option>
                         <option value="spawnResearcher">{{ translations.command_spawnResearcher }}</option>
                         <option value="rmTent">{{ translations.command_rmTent }}</option>
                         <option value="rmTentWithGift">{{ translations.command_rmTentWithGift }}</option>
+                        {% endif %}
                     </select>
                 </div>
 

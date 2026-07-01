@@ -1,5 +1,7 @@
 "use strict";
 
+export const mode = document.documentElement.dataset.mode;
+
 export const api = {
     sendToServer(data) {
         let xhr = new XMLHttpRequest();
@@ -99,13 +101,13 @@ export class CardUtils {
 
     static showElements(...divs) {
         for (let div of divs) {
-            div.hidden = false;
+            if (div) div.hidden = false;
         }
     }
 
     static hideElements(...divs) {
         for (let div of divs) {
-            div.hidden = true;
+            if (div) div.hidden = true;
         }
     }
 };

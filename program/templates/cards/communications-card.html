@@ -30,14 +30,17 @@
                         <option value="none" selected></option>
                         <option value="toast-simple">{{ translations.communication_toast_simple }}</option>
                         <option value="toast-with-icon">{{ translations.communication_toast_with_icon }}</option>
+                        {% if mode == 'legacy' %}
                         <option value="dialogue">{{ translations.communication_dialogue }}</option>
                         <option value="researcher-diary-new">{{ translations.communication_researcher_diary_new }}</option>
                         <option value="researcher-diary-replace">{{ translations.communication_researcher_diary_replace }}</option>
                         <option value="researcher-diary-replace-goodbye">{{ translations.communication_researcher_diary_replace_goodbye }}</option>
                         <option value="structure-book">{{ translations.communication_structure_book }}</option>
+                        {% endif %}
                     </select>
                 </div>
 
+                {% if mode == 'legacy' %}
                 <div id="researcher-diary-struct" class="row input-group g-0 mt-3" hidden>
                     <span class="input-group-text col-4">{{ translations.structure }}</span>
                     <select id="diary-structure" class="form-select">
@@ -63,6 +66,7 @@
                         <option value="noteblock_ship">{{ translations.structure_noteblock_ship }}</option>
                     </select>
                 </div>
+                {% endif %}
 
                 <div id="toast-icon" class="row input-group g-0 mt-3" hidden>
                     <span class="input-group-text col-4">{{ translations.namespace }}</span>
@@ -71,10 +75,12 @@
                     <input id="item-id" class="form-control" value="stone">
                 </div>
 
+                {% if mode == 'legacy' %}
                 <div id="author" class="row input-group g-0 mt-3" hidden>
                     <span class="input-group-text col-4">{{ translations.author }}</span>
                     <input id="author-text" class="form-control">
                 </div>
+                {% endif %}
 
                 <div id="title" class="row input-group g-0 mt-3" hidden>
                     <span class="input-group-text col-4">{{ translations.title }}</span>

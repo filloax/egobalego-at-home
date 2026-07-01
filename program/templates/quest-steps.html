@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html data-bs-theme="{{theme}}">
+<html data-bs-theme="{{theme}}" data-mode="{{mode}}">
     {% include 'shared/head.html' %}
     <body>
         {% include 'shared/header.html' %}
         <main class="container my-4">
+            {% if mode != 'legacy' %}
+                <div class="row justify-content-center text-danger text-center mb-3">
+                    {{ translations.growsseth_only_warning }}
+                </div>
+            {% endif %}
             <div class="row row-cols-lg-3 mx-lg-5">
                 {% include 'cards/quest-steps-cards.html' %}
             </div>

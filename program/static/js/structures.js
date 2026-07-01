@@ -1,13 +1,14 @@
 "use strict";
 
-import { api, state, addCardButton, CardUtils } from "./shared/utils.js";
+import { api, state, addCardButton, CardUtils, mode } from "./shared/utils.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
     addCardButton.initialize();
     state.loadLastId();
     let serverData = await state.loadServerData();
+    let structureType = mode === "legacy" ? "structure" : "apibalego:structure";
     serverData.forEach(item => {
-        if (item.type === "structure")
+        if (item.type === structureType)
             addStructureCard(false, item);
     });
     addCardButton.activate(() => addStructureCard(true));
@@ -16,32 +17,51 @@ document.addEventListener("DOMContentLoaded", async function () {
 async function updateServer(card, action) {
     let id = card.querySelector("#card-id").value;
     let structure = card.querySelector("#structure-type").value;
-    let golemVariant = card.querySelector("#golem-select").value;
-    let golemZombie = card.querySelector("#golem-zombie-switch").checked;
     let x = card.querySelector("#x-coord").value;
     let y = card.querySelector("#y-coord").value;
     let z = card.querySelector("#z-coord").value;
     let rotation = card.querySelector("#rotation-select").value;
     let active = card.querySelector("#card-enabler-switch").checked;
 
-    let formattedStructure = structure;
-    if (structure === "growsseth:golem_variants") {
-        if (golemZombie)
-            formattedStructure = formattedStructure + "/zombie_" + golemVariant;
-        else
-            formattedStructure = formattedStructure + "/" + golemVariant;
+    let structureData;
+    if (mode === "legacy") {
+        let golemVariant = card.querySelector("#golem-select").value;
+        let golemZombie = card.querySelector("#golem-zombie-switch").checked;
+
+        let formattedStructure = structure;
+        if (structure === "growsseth:golem_variants") {
+            if (golemZombie)
+                formattedStructure = formattedStructure + "/zombie_" + golemVariant;
+            else
+                formattedStructure = formattedStructure + "/" + golemVariant;
+        }
+        structureData = {
+            "id": id,
+            "type": "structure",
+            "structure": formattedStructure,
+            "x": parseInt(x) || 0,
+            "y": parseInt(y) || 0,
+            "z": parseInt(z) || 0,
+            "active": active
+        };
+        if (rotation !== "auto")
+            structureData["rotation"] = rotation;
+    } else {
+        structureData = {
+            "id": id,
+            "type": "apibalego:structure",
+            "active": active,
+            "details": {
+                "structureId": structure,
+                "startPos": {
+                    "x": parseInt(x) || 0,
+                    "y": parseInt(y) || 0,
+                    "z": parseInt(z) || 0,
+                },
+                "rotation": rotation
+            }
+        };
     }
-    let structureData = {
-        "id": id,
-        "type": "structure",
-        "structure": formattedStructure,
-        "x": parseInt(x) || 0,
-        "y": parseInt(y) || 0,
-        "z": parseInt(z) || 0,
-        "active": active
-    };
-    if (rotation !== "auto")
-        structureData["rotation"] = rotation;
     structureData = { [action]: [structureData] };
 
     api.sendToServer(structureData);
@@ -71,8 +91,8 @@ function addStructureCard(isNew, item) {
     let structureTypeSelect = thisCard.querySelector("#structure-type");
 
     let golemVariantDiv = thisCard.querySelector("#golem-variant");
-    let golemVariantSelect = golemVariantDiv.querySelector("#golem-select");
-    let golemZombieSwitch = golemVariantDiv.querySelector("#golem-zombie-switch");
+    let golemVariantSelect = golemVariantDiv?.querySelector("#golem-select");
+    let golemZombieSwitch = golemVariantDiv?.querySelector("#golem-zombie-switch");
 
     let coordinatesDiv = thisCard.querySelector("#coordinates");
     let x = coordinatesDiv.querySelector("#x-coord");
@@ -88,17 +108,25 @@ function addStructureCard(isNew, item) {
     }
     else {
         id.value = item.id;
-        structureTypeSelect.value = item.structure;
-        if (item.structure.includes("growsseth:golem_variants")) {
-            structureTypeSelect.value = item.structure.split("/")[0];
-            let golemVariant = item.structure.split("/")[1]
-            golemVariantSelect.value = golemVariant.replace("zombie_", "");
-            golemZombieSwitch.checked = item.structure.includes("/zombie_");
+        if (mode === "legacy") {
+            structureTypeSelect.value = item.structure;
+            if (item.structure.includes("growsseth:golem_variants")) {
+                structureTypeSelect.value = item.structure.split("/")[0];
+                let golemVariant = item.structure.split("/")[1]
+                golemVariantSelect.value = golemVariant.replace("zombie_", "");
+                golemZombieSwitch.checked = item.structure.includes("/zombie_");
+            }
+            x.value = item.x;
+            y.value = item.y;
+            z.value = item.z;
+            rotation.value = item.rotation ? item.rotation : "auto";
+        } else {
+            structureTypeSelect.value = item.details.structureId;
+            x.value = item.details.startPos[0];
+            y.value = item.details.startPos[1];
+            z.value = item.details.startPos[2];
+            rotation.value = item.details.rotation ?? "NONE";
         }
-        x.value = item.x;
-        y.value = item.y;
-        z.value = item.z;
-        rotation.value = item.rotation ? item.rotation : "auto";
         cardEnablerSwitch.checked = item.active
 
         enableStructureCard(structureTypeSelect.value)
@@ -108,7 +136,8 @@ function addStructureCard(isNew, item) {
 
     structureTypeSelect.addEventListener("change", function () {
         let selectedStructure = structureTypeSelect.value;
-        if (selectedStructure !== "growsseth:none") {
+        let isUnset = mode === "legacy" ? (selectedStructure === "growsseth:none") : (selectedStructure.trim() === "");
+        if (!isUnset) {
             enableStructureCard(selectedStructure)
             cardEnablerSwitch.checked = false;
             CardUtils.changeColorAndLabel(thisCard, cardEnablerLabel, false)
@@ -117,17 +146,21 @@ function addStructureCard(isNew, item) {
         else {
             CardUtils.disableCard(thisCard, warningDiv, cardEnablerDiv);
             CardUtils.hideElements(golemVariantDiv, coordinatesDiv, rotationDiv);
-            structurePreview.src = defaultPreview;
+            if (structurePreview) structurePreview.src = defaultPreview;
         }
     });
 
-    golemVariantSelect.addEventListener("change", function () {
-        updatePreview("growsseth:golem_variants")
-    });
+    if (golemVariantSelect) {
+        golemVariantSelect.addEventListener("change", function () {
+            updatePreview("growsseth:golem_variants")
+        });
+    }
 
-    golemZombieSwitch.addEventListener("change", function () {
-        zombieImgFilter();
-    });
+    if (golemZombieSwitch) {
+        golemZombieSwitch.addEventListener("change", function () {
+            zombieImgFilter();
+        });
+    }
 
     CardUtils.setupDeleteButton(thisCard, structureTypeSelect, confirmDeletionModal, deleteButtonModal, updateServer);
 
@@ -138,10 +171,12 @@ function addStructureCard(isNew, item) {
     function enableStructureCard(selectedStructure) {
         warningDiv.hidden = true;
         CardUtils.showElements(cardEnablerDiv, coordinatesDiv, rotationDiv);
-        golemVariantDiv.hidden = (selectedStructure !== "growsseth:golem_variants");
+        if (golemVariantDiv)
+            golemVariantDiv.hidden = (selectedStructure !== "growsseth:golem_variants");
     }
 
     function updatePreview(selectedStructure) {
+        if (!structurePreview) return;
         selectedStructure = selectedStructure.split(":")[1]
         let selectedPreview = defaultPreview;
         if (selectedStructure === "golem_variants")
@@ -153,7 +188,8 @@ function addStructureCard(isNew, item) {
     }
 
     function zombieImgFilter() {
-        if (structureTypeSelect.value === "growsseth:golem_variants" && golemZombieSwitch.checked)
+        if (!structurePreview) return;
+        if (structureTypeSelect.value === "growsseth:golem_variants" && golemZombieSwitch?.checked)
             structurePreview.style.filter = "sepia(100%)";
         else
             structurePreview.style.filter = "none";

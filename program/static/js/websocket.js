@@ -26,8 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let toastCard = document.getElementById("websocket-toast-card");
     let commandCard = document.getElementById("websocket-command-card");
 
-    let sendDialogueButton = dialogueCard.querySelector("#send-dialogue-button");
-    let dialogueContent = dialogueCard.querySelector("#dialogue-content");
+    let sendDialogueButton = dialogueCard?.querySelector("#send-dialogue-button");
+    let dialogueContent = dialogueCard?.querySelector("#dialogue-content");
 
     let sendToastButton = toastCard.querySelector("#send-toast-button");
     let toastType = toastCard.querySelector("#toast-type");
@@ -53,11 +53,13 @@ document.addEventListener("DOMContentLoaded", function () {
         lastClickedButton = reloadButton;
     });
 
-    sendDialogueButton.addEventListener("click", function () {
-        let dialogue = { "content": dialogueContent.value }
-        socket.emit("rdialogue", dialogue);
-        lastClickedButton = sendDialogueButton;
-    });
+    if (sendDialogueButton) {
+        sendDialogueButton.addEventListener("click", function () {
+            let dialogue = { "content": dialogueContent.value }
+            socket.emit("rdialogue", dialogue);
+            lastClickedButton = sendDialogueButton;
+        });
+    }
 
     sendToastButton.addEventListener("click", function () {
         let toast = { "title": toastTitle.value }

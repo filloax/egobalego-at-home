@@ -26,6 +26,10 @@
     "header_commands": "COMMANDS",
     "header_websocket": "WEBSOCKET",
 
+    "growsseth_only_warning": "This feature is exclusive to the Ruins of Growsseth mod and only works in legacy mode. Use one of the \"-legacy\" launchers to enable it.",
+    "mode_legacy": "LEGACY",
+    "mode_new": "NEW",
+
     "help_commands": "Commands Help",
     "help_communications": "Communications Help",
     "help_home": "Help",

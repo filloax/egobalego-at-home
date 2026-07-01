@@ -9,3 +9,5 @@ __pycache__
 data/color_theme
 data/server_data.json
 data/last_id.txt
+data/server_data_new.json
+data/last_id_new.txt
