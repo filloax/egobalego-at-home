@@ -15,6 +15,7 @@
     "add_communication": "Add communication",
     "add_structure": "Add structure",
     "add_trade": "Add trade",
+    "add_datapack": "Add datapack",
 
     "reload_mod_data": "Reload mod data",
     "send": "Send",
@@ -25,8 +26,10 @@
     "header_trades": "TRADES",
     "header_commands": "COMMANDS",
     "header_websocket": "WEBSOCKET",
+    "header_datapacks": "DATAPACKS",
 
     "growsseth_only_warning": "This feature is exclusive to the Ruins of Growsseth mod and only works in legacy mode. Use one of the \"-legacy\" launchers to enable it.",
+    "apibalego_only_warning": "This feature requires the new Apibalego API and does not work in legacy mode. Use one of the launchers without \"-legacy\" to enable it.",
     "mode_legacy": "LEGACY",
     "mode_new": "NEW",
 
@@ -37,6 +40,7 @@
     "help_structures": "Structures Help",
     "help_trades": "Trades Help",
     "help_websocket": "WebSocket Help",
+    "help_datapacks": "Datapacks Help",
 
     "yes": "Yes",
     "no": "No",
@@ -145,6 +149,10 @@
     "trade_map_name": "Name",
     "trade_json_content": "Trade JSON",
     "trade_json_error": "Warning: Invalid JSON",
+
+    "datapack_type_not_set": "Datapack download URL not set",
+    "datapack_download_url": "Download URL",
+    "version": "Version",
 
     "no_websocket": "Connect the mod to the WebSocket to use this function",
     "mod_response_status": "Last response",

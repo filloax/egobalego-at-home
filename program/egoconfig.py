@@ -12,6 +12,7 @@ class ApiType:
     TOAST = "apibalego:toast"
     COMMAND = "apibalego:command"
     STRUCTURE = "apibalego:structure"
+    DATAPACK = "apibalego:datapack"
 
 class AppData:
     """Application data storage"""
@@ -55,6 +56,7 @@ class Templates:
     COMMUNICATIONS = "communications"
     QUEST_STEPS = "quest-steps"
     STRUCTURES = "structures"
+    DATAPACKS = "datapacks"
     WEBSOCKET = "websocket"
 
 class Routes:

@@ -35,6 +35,10 @@ def get_flask(app_name):
     def structures():
         return _render_custom_template(Templates.STRUCTURES)
 
+    @app.route(_make_route(Templates.DATAPACKS))
+    def datapacks():
+        return _render_custom_template(Templates.DATAPACKS)
+
     @app.route(_make_route(Templates.WEBSOCKET))
     def websocket():
         return _render_custom_template(Templates.WEBSOCKET)
