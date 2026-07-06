@@ -8,6 +8,12 @@ export const api = {
         xhr.open("POST", "/data_receiver");
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send(JSON.stringify(data));
+    },
+    sendToClient(data) {
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/client_data_receiver");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify(data));
     }
 };
 
@@ -26,6 +32,22 @@ export const state = {
         const responseForServerData = await fetch("/server_data/raw");
         this.serverData = await responseForServerData.json();
         return this.serverData;
+    },
+
+    lastIdClient: null,
+    async loadLastIdClient() {
+        const responseForLastId = await fetch("/client_last_id");
+        this.lastIdClient = parseInt(await responseForLastId.text());
+    },
+    newLastIdClient() {
+        return ++this.lastIdClient;
+    },
+
+    clientData: null,
+    async loadClientData() {
+        const responseForClientData = await fetch("/client_data/raw");
+        this.clientData = await responseForClientData.json();
+        return this.clientData;
     }
 };
 

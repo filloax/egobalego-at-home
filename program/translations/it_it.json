@@ -16,6 +16,7 @@
     "add_structure": "Aggiungi struttura",
     "add_trade": "Aggiungi scambio",
     "add_datapack": "Aggiungi datapack",
+    "add_client_data": "Aggiungi elemento client",
 
     "reload_mod_data": "Ricarica dati mod",
     "send": "Invia",
@@ -27,6 +28,7 @@
     "header_commands": "COMANDI",
     "header_websocket": "WEBSOCKET",
     "header_datapacks": "DATAPACK",
+    "header_client_data": "DATI CLIENT",
 
     "growsseth_only_warning": "Questa funzione è esclusiva della mod Ruins of Growsseth e funziona solo in modalità legacy. Usa uno dei lanciatori \"-legacy\" per attivarla.",
     "apibalego_only_warning": "Questa funzione richiede la nuova API Apibalego e non funziona in modalità legacy. Usa uno dei lanciatori senza \"-legacy\" per attivarla.",
@@ -41,6 +43,7 @@
     "help_trades": "Aiuto scambi",
     "help_websocket": "Aiuto WebSocket",
     "help_datapacks": "Aiuto datapack",
+    "help_client-data": "Aiuto dati client",
 
     "yes": "Sì",
     "no": "No",
@@ -153,6 +156,14 @@
     "datapack_type_not_set": "URL di download del datapack non impostato",
     "datapack_download_url": "URL di download",
     "version": "Versione",
+
+    "client_data_type_not_set": "Tipo di elemento client non impostato",
+    "client_data_resourcepack": "Resource pack",
+    "client_data_menu_message": "Messaggio menu principale",
+    "client_data_menu_message_lines": "Messaggi (uno per riga)",
+
+    "websocket_client_toast": "Notifica client (funziona anche senza server, ad es. dal menu principale)",
+    "client_reload_mod_data": "Ricarica dati client (funziona anche senza server, ad es. dal menu principale)",
 
     "no_websocket": "Connetti la mod al WebSocket per usare questa funzionalità",
     "mod_response_status": "Ultima risposta",

@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let dialogueCard = document.getElementById("websocket-dialogue-card");
     let toastCard = document.getElementById("websocket-toast-card");
+    let clientToastCard = document.getElementById("websocket-client-toast-card");
     let commandCard = document.getElementById("websocket-command-card");
 
     let sendDialogueButton = dialogueCard?.querySelector("#send-dialogue-button");
@@ -37,14 +38,30 @@ document.addEventListener("DOMContentLoaded", function () {
     let toastIconItemId = toastCard.querySelector("#item-id");
     let toastContent = toastCard.querySelector("#toast-content");
 
+    let sendClientToastButton = clientToastCard?.querySelector("#send-client-toast-button");
+    let clientToastType = clientToastCard?.querySelector("#client-toast-type");
+    let clientToastIconDiv = clientToastCard?.querySelector("#client-toast-icon");
+    let clientToastTitle = clientToastCard?.querySelector("#client-toast-title");
+    let clientToastIconNamespace = clientToastCard?.querySelector("#client-namespace");
+    let clientToastIconItemId = clientToastCard?.querySelector("#client-item-id");
+    let clientToastContent = clientToastCard?.querySelector("#client-toast-content");
+
     let sendCommandButton = commandCard.querySelector("#send-command-button");
     let commandContent = commandCard.querySelector("#command-content");
+
+    let sendClientReloadButton = document.getElementById("send-client-reload-button");
 
     let lastClickedButton;
 
     toastType.onchange = function () {
         toastIconDiv.hidden = (toastType.value == "toast-simple");
     };
+
+    if (clientToastType) {
+        clientToastType.onchange = function () {
+            clientToastIconDiv.hidden = (clientToastType.value == "toast-simple");
+        };
+    }
 
 
     // Buttons event listeners
@@ -71,11 +88,30 @@ document.addEventListener("DOMContentLoaded", function () {
         lastClickedButton = sendToastButton;
     });
 
+    if (sendClientToastButton) {
+        sendClientToastButton.addEventListener("click", function () {
+            let toast = { "title": clientToastTitle.value }
+            if (clientToastType.value == "toast-with-icon")
+                toast["item"] = clientToastIconNamespace.value + ":" + clientToastIconItemId.value
+            if (clientToastContent.value !== "")
+                toast["message"] = clientToastContent.value
+            socket.emit("client_toast", toast);
+            lastClickedButton = sendClientToastButton;
+        });
+    }
+
     sendCommandButton.addEventListener("click", function () {
         let command = { "command": commandContent.value }
         socket.emit("cmd", command);
         lastClickedButton = sendCommandButton;
     });
+
+    if (sendClientReloadButton) {
+        sendClientReloadButton.addEventListener("click", function () {
+            socket.emit("client_reload");
+            lastClickedButton = sendClientReloadButton;
+        });
+    }
 
 
     // Socket event listeners

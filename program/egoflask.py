@@ -39,6 +39,10 @@ def get_flask(app_name):
     def datapacks():
         return _render_custom_template(Templates.DATAPACKS)
 
+    @app.route(_make_route(Templates.CLIENT_DATA))
+    def client_data():
+        return _render_custom_template(Templates.CLIENT_DATA)
+
     @app.route(_make_route(Templates.WEBSOCKET))
     def websocket():
         return _render_custom_template(Templates.WEBSOCKET)
@@ -63,6 +67,27 @@ def get_flask(app_name):
     @app.route(Routes.LAST_ID, methods=['GET'])
     def send_last_id():
         return str(AppData.last_id)
+
+    @app.route(Routes.CLIENT_DATA_RECEIVER, methods=['POST'])
+    def receive_client_data():
+        if request.method == 'POST':
+            utils.update_client_data(request.json)
+            return "Data sent correctly to the server!"
+        return "Request method was not POST!"
+
+    @app.route(Routes.CLIENT_DATA_RAW, methods=['GET'])
+    def send_client_data_raw():
+        # Used by the front-end
+        return AppData.client_data
+
+    @app.route(Routes.CLIENT_DATA, methods=['GET'])
+    def send_client_data():
+        # Used by the mod client, polled independently from /server_data
+        return AppData.client_data
+
+    @app.route(Routes.CLIENT_LAST_ID, methods=['GET'])
+    def send_client_last_id():
+        return str(AppData.last_id_client)
 
     @app.route(Routes.SWITCH_THEME, methods=['GET'])
     def switch_color_theme():
@@ -98,6 +123,12 @@ def get_socketio():
         utils.print_info("Sending reload event...")
         emit(SocketEvents.RELOAD, broadcast=True)
 
+    if AppData.mode == Mode.NEW:
+        @socketio.on(SocketEvents.CLIENT_RELOAD)
+        def reload_client():
+            utils.print_info("Sending client_reload event...")
+            emit(SocketEvents.CLIENT_RELOAD, broadcast=True)
+
     if AppData.mode == Mode.LEGACY:
         @socketio.on(SocketEvents.RESEARCHER_DIALOGUE)
         def send_researcher_dialogue(data):
@@ -108,6 +139,12 @@ def get_socketio():
     def send_toast(data):
         utils.print_info(f"Sending toast event: {data}")
         emit(SocketEvents.TOAST, data, broadcast=True)
+
+    if AppData.mode == Mode.NEW:
+        @socketio.on(SocketEvents.CLIENT_TOAST)
+        def send_client_toast(data):
+            utils.print_info(f"Sending client_toast event: {data}")
+            emit(SocketEvents.CLIENT_TOAST, data, broadcast=True)
 
     @socketio.on(SocketEvents.COMMAND)
     def send_command(data):

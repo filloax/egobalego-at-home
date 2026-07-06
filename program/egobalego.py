@@ -29,6 +29,8 @@ def main():
     utils.load_translations()
     utils.load_server_data()
     utils.load_last_id()
+    utils.load_client_data()
+    utils.load_last_id_client()
     utils.load_color_theme()
     utils.check_for_updates()
 

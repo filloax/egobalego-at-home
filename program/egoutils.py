@@ -76,6 +76,66 @@ def update_database():
         json.dump(AppData.server_data, f, indent=4)
 
 
+def load_client_data():
+    """Loads the client gamemaster API data file in memory"""
+    try:
+        with open(Consts.FILE_CLIENT_DATA, 'r') as f:
+            data = f.read()
+            AppData.client_data = json.loads(data)
+    except FileNotFoundError:
+        print_warning(f"Could not find the file '{Consts.FILE_CLIENT_DATA}', it will be created the first time you add something.")
+    except Exception as e:
+        print_error(f"Client data could not be loaded and was reset (your changes will apply on the next edit). Exception:\n{e}")
+
+
+def update_client_data(received_data):
+    """Updates the client gamemaster API data (both memory and file) with the received data"""
+    if received_data is not None:
+        if "add" in received_data.keys():
+            add_client_data(received_data["add"])
+        if "remove" in received_data.keys():
+            remove_client_data(received_data["remove"])
+        update_client_database()
+    else:
+        print_error("Error: no data received from the client!")
+
+
+def add_client_data(items_to_add):
+    """Adds new items to the client gamemaster API data"""
+    for new_item in items_to_add:
+        found = False
+        if len(AppData.client_data) == 0:
+            AppData.last_id_client += 1
+            AppData.client_data.append(new_item)
+        else:
+            for existing_item in AppData.client_data:
+                if existing_item["id"] == new_item["id"]:
+                    found = True
+                    break
+            if found:
+                AppData.client_data.remove(existing_item)
+                AppData.client_data.append(new_item)
+            else:
+                AppData.last_id_client += 1
+                AppData.client_data.append(new_item)
+
+
+def remove_client_data(items_to_remove):
+    """Removes the specified items from the client gamemaster API data"""
+    for new_object in items_to_remove:
+        for object in AppData.client_data:
+            if object["id"] == new_object["id"]:
+                AppData.client_data.remove(object)
+
+
+def update_client_database():
+    """Overwrites the client data and last id files with the values in memory"""
+    with open(Consts.FILE_LAST_ID_CLIENT, 'w') as f:
+        f.write(str(AppData.last_id_client))
+    with open(Consts.FILE_CLIENT_DATA, 'w') as f:
+        json.dump(AppData.client_data, f, indent=4)
+
+
 def update_color_theme():
     """Overwrites the color theme file with the value in memory"""
     with open(Consts.FILE_COLOR_THEME, 'w') as f:
@@ -106,6 +166,15 @@ def load_last_id():
             AppData.last_id = int(f.read().strip())
     except FileNotFoundError:
         print_warning(f"Could not find the file '{last_id_file}', it will be created the first time you add something.")
+
+
+def load_last_id_client():
+    """Loads the client gamemaster API last id file in memory"""
+    try:
+        with open(Consts.FILE_LAST_ID_CLIENT, 'r') as f:
+            AppData.last_id_client = int(f.read().strip())
+    except FileNotFoundError:
+        print_warning(f"Could not find the file '{Consts.FILE_LAST_ID_CLIENT}', it will be created the first time you add something.")
 
 
 def load_color_theme():
